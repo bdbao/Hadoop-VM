@@ -1,0 +1,5 @@
+.DS_Store
+*.tar.gz
+
+hadoop-3.2.3/*
+!hadoop-3.2.3/etc/
