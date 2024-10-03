@@ -1,7 +1,7 @@
 # Hadoop - Virtual Machine setup
 
-## Setup Virtual Machines
-### Multipass (Ubuntu machine)
+# Setup Virtual Machines
+## Multipass (Ubuntu machine)
 ```bash
 git clone https://github.com/bdbao/hadoop-vm
 cd hadoop-vm
@@ -28,7 +28,7 @@ Mount data storage
 multipass mount . hadoop-vm:/home/ubuntu/hadoop-vm
 multipass umount hadoop-vm # [instance-name]
 ```
-### Manipulate on `multipass shell hadoop-vm`
+## Manipulate on `multipass shell hadoop-vm`
 Install SSH
 ```bash
 sudo apt-get install openssh-server
@@ -63,7 +63,7 @@ instead of `JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64`
 ```
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
 export PATH=$PATH:/usr/lib/jvm/java-8-openjdk-arm64/bin
-export HADOOP_HOME=~/hadoop-vm/hadoop-3.2.3/
+export HADOOP_HOME=~/hadoop-3.2.3/
 export PATH=$PATH:$HADOOP_HOME/bin
 export PATH=$PATH:$HADOOP_HOME/sbin
 export HADOOP_MAPRED_HOME=$HADOOP_HOME
@@ -162,24 +162,54 @@ chmod 0600 ~/.ssh/authorized_keys
 ```
 Copy the Hadoop installation to a location outside the shared/mounted folder
 ```bash
-cp -r /home/ubuntu/hadoop-vm/hadoop-3.2.3 /home/ubuntu/
-export HADOOP_HOME=/home/ubuntu/hadoop-3.2.3
+cp -r /home/ubuntu/hadoop-vm/hadoop-3.2.3 /home/ubuntu/ # Or: `mv`
+export HADOOP_HOME=~/hadoop-3.2.3
 export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+source ~/.bashrc # if changed in ~/.bashrc
 ```
 
 Format HDFS
 ```bash
 chmod +x ~/*
 hdfs namenode -format # or `hadoop-3.2.3/bin/hdfs namenode -format`
+ls hadoop-3.2.3/sbin
 start-all.sh    # (start-dfs.sh and start-yarn.sh), it saved the path already
                 # or: hadoop-3.2.3/sbin/start-all.sh
-jps # See similar this: 26770 ResourceManager, 26949 NodeManager, 27402 Jps, 25355 DataNode, 25611 SecondaryNameNode
+jps # See similar this: 2417 NameNode, 2577 DataNode, 3298 NodeManager, 3730 Jps, 3111 ResourceManager, 2824 SecondaryNameNode
+stop-all.sh
+
+ip addr show # see 10.211.57.19
+# Look for the IP address under the eth0 or ens3 interface. It will look something like 192.168.x.x or 10.0.x.x
 ```
 - Go to
-  - HDFS: http://localhost:9870
-  - YARN: http://localhost:8088
+  - HDFS: http://10.211.57.19:9870 (http://localhost:9870)
+  - YARN: http://10.211.57.19:8088 (http://localhost:8088)
+```
+NameNode                  : http://localhost:9870 (browse files)
+NodeManager               : http://localhost:8042
+Resource Manager (Yarn)   : http://localhost:8088/cluster
+```
+## Process data on HDFS hadoop
+Access the HDFS Web UI:
+```
+http://<your_vm_ip>:9870
+```
+```bash
+cd ~
+hdfs dfs -mkdir -p /sales/data # hadoop fs -mkdir -p /sales/data
+hdfs dfs -put hadoop-vm/data/data.csv /sales/data
+hdfs dfs -ls /sales/data
 
-## (Optional) Open VScode for the Multipass-vm
+scp back-rlhf-chatgpt.jpg ubuntu@10.211.57.19:~/hadoop-vm/data
+
+
+hdfs dfs -get /sales/data/data.csv ~/hadoop-vm/data
+hdfs dfs -rm -r /sales
+hdfs dfs -mv oldname newname
+```
+Go to `http://<your_vm_ip>:9870/explorer.html` (the HDFS Web UI).
+
+# (Optional) Open VScode for the Multipass-vm
 ```bash
 # On Ubuntu Multipass
 sudo apt install openssh-server
@@ -195,7 +225,8 @@ nano ~/.ssh/config
     IdentityFile ~/.ssh/id_ed25519
 # DO: Go to VScode -> Connect to Host -> Connect "hadoop-vm"
 ```
-### Could not establish connection to "hadoop-vm": Permission denied (publickey).
+## Fix Error:
+## Error: Could not establish connection to "hadoop-vm": Permission denied (publickey).
 ```bash
 ssh-copy-id ubuntu@10.211.57.19 # ubuntu@<instance-ip>, And: The bug "ubuntu@10.211.57.19: Permission denied (publickey)" bellow occurs
 chmod 700 ~/.ssh
@@ -205,7 +236,7 @@ chmod 600 ~/.ssh/config
 ssh ubuntu@10.211.57.19 # Check the ssh connection
 ```
 
-### Fix Error: ubuntu@10.211.57.19: Permission denied (publickey).
+## Error: ubuntu@10.211.57.19: Permission denied (publickey).
 ```bash
 cat ~/.ssh/id_ed25519.pub # E.g you public key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaTlX2MjUu0w962dPQMoq3Gq6Y3Ec5la2qh3SVu4R8k bdbao@bdbaos-MBP.local
 (ssh-keygen -t ed25519) # if you don't have one
