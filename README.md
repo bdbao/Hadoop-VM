@@ -1,7 +1,14 @@
-# Hadoop - Virtual Machine setup
+# Hadoop Cluster Setup on Virtual Machine using Multipass
+---
+# Quick start
+```bash
+git clone https://github.com/bdbao/hadoop-vm
+cd hadoop-vm
+multipass launch jammy --name hadoop-vm
 
-# Setup Virtual Machines
-## Multipass (Ubuntu machine)
+```
+# Build from scratch
+## Create Multipass instance (Ubuntu machine)
 ```bash
 git clone https://github.com/bdbao/hadoop-vm
 cd hadoop-vm
@@ -167,19 +174,17 @@ export HADOOP_HOME=~/hadoop-3.2.3
 export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 source ~/.bashrc # if changed in ~/.bashrc
 ```
-
-Format HDFS
+# Process on HDFS
 ```bash
-chmod +x ~/*
+chmod +x ~/*    # (Optional)
 hdfs namenode -format # or `hadoop-3.2.3/bin/hdfs namenode -format`
 ls hadoop-3.2.3/sbin
-start-all.sh    # (start-dfs.sh and start-yarn.sh), it saved the path already
+start-all.sh    # combined: start-dfs.sh and start-yarn.sh
                 # or: hadoop-3.2.3/sbin/start-all.sh
-jps # See similar this: 2417 NameNode, 2577 DataNode, 3298 NodeManager, 3730 Jps, 3111 ResourceManager, 2824 SecondaryNameNode
+jps             # Output is similar this: 2417 NameNode, 2577 DataNode, 3298 NodeManager, 3730 Jps, 3111 ResourceManager, 2824 SecondaryNameNode
 stop-all.sh
 
-ip addr show # see 10.211.57.19
-# Look for the IP address under the eth0 or ens3 interface. It will look something like 192.168.x.x or 10.0.x.x
+ip addr show    # Look for the IP address under the eth0 or ens3 interface. It will look something like 192.168.x.x or 10.0.x.x (e.g: 10.211.57.19)
 ```
 - Go to
   - HDFS: http://10.211.57.19:9870 (http://localhost:9870)
@@ -189,19 +194,15 @@ NameNode                  : http://localhost:9870 (browse files)
 NodeManager               : http://localhost:8042
 Resource Manager (Yarn)   : http://localhost:8088/cluster
 ```
-## Process data on HDFS hadoop
-Access the HDFS Web UI:
-```
-http://<your_vm_ip>:9870
-```
+
+Access the HDFS Web UI (`http://<your_vm_ip>:9870`):
 ```bash
 cd ~
 hdfs dfs -mkdir -p /sales/data # hadoop fs -mkdir -p /sales/data
 hdfs dfs -put hadoop-vm/data/data.csv /sales/data
 hdfs dfs -ls /sales/data
 
-scp back-rlhf-chatgpt.jpg ubuntu@10.211.57.19:~/hadoop-vm/data
-
+scp /path/to/your/file username@<vm_ip>:/path/in/vm/ # e.g: scp back-rlhf-chatgpt.jpg ubuntu@10.211.57.19:~/hadoop-vm/data
 
 hdfs dfs -get /sales/data/data.csv ~/hadoop-vm/data
 hdfs dfs -rm -r /sales
@@ -209,7 +210,7 @@ hdfs dfs -mv oldname newname
 ```
 Go to `http://<your_vm_ip>:9870/explorer.html` (the HDFS Web UI).
 
-# (Optional) Open VScode for the Multipass-vm
+# (Optional) Open VScode for the Multipass instance
 ```bash
 # On Ubuntu Multipass
 sudo apt install openssh-server
@@ -226,7 +227,7 @@ nano ~/.ssh/config
 # DO: Go to VScode -> Connect to Host -> Connect "hadoop-vm"
 ```
 ## Fix Error:
-## Error: Could not establish connection to "hadoop-vm": Permission denied (publickey).
+1. Error: Could not establish connection to "hadoop-vm": Permission denied (publickey).
 ```bash
 ssh-copy-id ubuntu@10.211.57.19 # ubuntu@<instance-ip>, And: The bug "ubuntu@10.211.57.19: Permission denied (publickey)" bellow occurs
 chmod 700 ~/.ssh
@@ -236,7 +237,7 @@ chmod 600 ~/.ssh/config
 ssh ubuntu@10.211.57.19 # Check the ssh connection
 ```
 
-## Error: ubuntu@10.211.57.19: Permission denied (publickey).
+2. Error: ubuntu@10.211.57.19: Permission denied (publickey).
 ```bash
 cat ~/.ssh/id_ed25519.pub # E.g you public key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaTlX2MjUu0w962dPQMoq3Gq6Y3Ec5la2qh3SVu4R8k bdbao@bdbaos-MBP.local
 (ssh-keygen -t ed25519) # if you don't have one
