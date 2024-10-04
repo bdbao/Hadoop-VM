@@ -2,16 +2,15 @@
 ---
 # Quick start
 ```bash
-git clone https://github.com/bdbao/hadoop-vm
-cd hadoop-vm
+git clone https://github.com/bdbao/Hadoop-VM
+cd Hadoop-VM
 multipass launch jammy --name hadoop-vm
 
 ```
 # Build from scratch
 ## Create Multipass instance (Ubuntu machine)
 ```bash
-git clone https://github.com/bdbao/hadoop-vm
-cd hadoop-vm
+mkdir ~/Hadoop-VM && cd ~/Hadoop-VM
 brew install --cask multipass
 multipass find # find Ubuntu versions
 multipass launch jammy --name hadoop-vm # Ubuntu 22.04 LTS
@@ -32,8 +31,9 @@ limactl start
 ```
 Mount data storage
 ```bash
-multipass mount . hadoop-vm:/home/ubuntu/hadoop-vm
-multipass umount hadoop-vm # [instance-name]
+# in MacOS
+multipass mount . hadoop-vm:/home/ubuntu/Hadoop-VM
+multipass umount Hadoop-VM # [instance-name]
 ```
 ## Manipulate on `multipass shell hadoop-vm`
 Install SSH
@@ -50,7 +50,6 @@ su - ubuntu
 ```
 Install Java-8
 ```bash
-cd ~/hadoop-vm
 sudo apt update
 sudo apt install openjdk-8-jdk-headless
 java -version
@@ -58,15 +57,12 @@ java -version
 ```bash
 sudo nano /etc/environment
 ```
-Add at the end of line: `export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-arm64"`
-instead of `JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64`
+Add at the end of line: `export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-arm64"` (or `java-8-openjdk-amd64`).
 ```bash
 source /etc/environment
 code ~/.bashrc # open vscode, and for editting
 ```
 Add at the end of file:
-`JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64`
-instead of `JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64`
 ```
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
 export PATH=$PATH:/usr/lib/jvm/java-8-openjdk-arm64/bin
@@ -86,22 +82,20 @@ export PDSH_RCMD_TYPE=ssh
 source ~/.bashrc
 echo $JAVA_HOME # Verify: show "/usr/lib/jvm/java-8-openjdk-amd64"
 
-sudo adduser hadoop # Create Hadoop User, Example password: 1234
+sudo adduser hadoop # (Optional) Create Hadoop User, Example password: 1234
 su - hadoop # Activate hadoop user, enter password "1234", sudo -i fo `root` user
 exit # Back to user `ubuntu` to store file
 
+cd ~/Hadoop-VM
 wget https://archive.apache.org/dist/hadoop/common/hadoop-3.2.3/hadoop-3.2.3.tar.gz
 tar -xzvf hadoop-3.2.3.tar.gz
 cd hadoop-3.2.3
 ```
-```bash
-code etc/hadoop/hadoop-env.sh
-```
-Edit at line 37:
+- In file `etc/hadoop/hadoop-env.sh` (access by `code $HADOOP_HOME/etc/hadoop/hadoop-env.sh`). Edit at line 37:
 ```
 JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
 ```
-- In file `etc/hadoop/core-site.xml` (access by `nano $HADOOP_HOME/etc/hadoop/core-site.xml`)
+- In file `etc/hadoop/core-site.xml` (access by `nano $HADOOP_HOME/etc/hadoop/core-site.xml`):
 ```
 <configuration>
   <property>
@@ -126,7 +120,7 @@ JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
   </property>
 </configuration>
 ```
-- In file `etc/hadoop/hdfs-site.xml`
+- In file `etc/hadoop/hdfs-site.xml`:
 ```
 <configuration>
   <property> 
@@ -135,7 +129,7 @@ JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
   </property>
 </configuration>
 ```
-- In file `etc/hadoop/mapred-site.xml`
+- In file `etc/hadoop/mapred-site.xml`:
 ```
 <configuration>
     <property> 
@@ -148,7 +142,7 @@ JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
     </property> 
 </configuration>
 ```
-- In file `etc/hadoop/yarn-site.xml`
+- In file `etc/hadoop/yarn-site.xml`:
 ```
 <configuration>
     <property> 
@@ -167,12 +161,12 @@ ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
 cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 chmod 0600 ~/.ssh/authorized_keys
 ```
-Copy the Hadoop installation to a location outside the shared/mounted folder
+Copy the Hadoop installation to a location outside the **shared/mounted** folder
 ```bash
-cp -r /home/ubuntu/hadoop-vm/hadoop-3.2.3 /home/ubuntu/ # Or: `mv`
-export HADOOP_HOME=~/hadoop-3.2.3
-export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
-source ~/.bashrc # if changed in ~/.bashrc
+cp -r ~/Hadoop-VM/hadoop-3.2.3 ~/ # Or: `mv`
+# export HADOOP_HOME=~/hadoop-3.2.3
+# export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+# source ~/.bashrc # if changed in ~/.bashrc
 ```
 # Process on HDFS
 ```bash
@@ -199,12 +193,12 @@ Access the HDFS Web UI (`http://<your_vm_ip>:9870`):
 ```bash
 cd ~
 hdfs dfs -mkdir -p /sales/data # hadoop fs -mkdir -p /sales/data
-hdfs dfs -put hadoop-vm/data/data.csv /sales/data
+hdfs dfs -put Hadoop-VM/data/data.csv /sales/data
 hdfs dfs -ls /sales/data
 
 scp /path/to/your/file username@<vm_ip>:/path/in/vm/ # e.g: scp back-rlhf-chatgpt.jpg ubuntu@10.211.57.19:~/hadoop-vm/data
 
-hdfs dfs -get /sales/data/data.csv ~/hadoop-vm/data
+hdfs dfs -get /sales/data/data.csv ~/Hadoop-VM/data
 hdfs dfs -rm -r /sales
 hdfs dfs -mv oldname newname
 ```
@@ -227,6 +221,7 @@ nano ~/.ssh/config
 # DO: Go to VScode -> Connect to Host -> Connect "hadoop-vm"
 ```
 ## Fix Error:
+E.g: "<user>@<instance-ip>" is "ubuntu@10.211.57.19"
 1. Error: Could not establish connection to "hadoop-vm": Permission denied (publickey).
 ```bash
 ssh-copy-id ubuntu@10.211.57.19 # ubuntu@<instance-ip>, And: The bug "ubuntu@10.211.57.19: Permission denied (publickey)" bellow occurs
