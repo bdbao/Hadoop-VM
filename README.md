@@ -2,11 +2,49 @@
 ---
 # Quick start
 ```bash
-git clone https://github.com/bdbao/Hadoop-VM
-cd Hadoop-VM
-multipass launch jammy --name hadoop-vm
+brew install --cask multipass
+multipass launch jammy --name hadoop-vm --disk 6G
 
+multipass shell hadoop-vm
+cd ~ && git clone https://github.com/bdbao/Hadoop-VM
+sudo apt update
+sudo apt install openjdk-8-jdk-headless -y
+java -version
+sudo sh -c 'echo export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-arm64" >> /etc/environment'
+source /etc/environment
+
+# cat <<EOF >> ~/.bashrc: This begins appending a block of text to the end of ~/.bashrc
+cat <<EOF >> ~/.bashrc
+export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
+export PATH=\$PATH:/usr/lib/jvm/java-8-openjdk-arm64/bin
+export HADOOP_HOME=~/hadoop-3.2.3/
+export PATH=\$PATH:\$HADOOP_HOME/bin
+export PATH=\$PATH:\$HADOOP_HOME/sbin
+export HADOOP_MAPRED_HOME=\$HADOOP_HOME
+export YARN_HOME=\$HADOOP_HOME
+export HADOOP_CONF_DIR=\$HADOOP_HOME/etc/hadoop
+export HADOOP_COMMON_LIB_NATIVE_DIR=\$HADOOP_HOME/lib/native
+export HADOOP_OPTS="-Djava.library.path=\$HADOOP_HOME/lib/native"
+export HADOOP_STREAMING=\$HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-3.2.3.jar
+export HADOOP_LOG_DIR=\$HADOOP_HOME/logs
+export PDSH_RCMD_TYPE=ssh
+EOF
+
+source ~/.bashrc
+wget https://archive.apache.org/dist/hadoop/common/hadoop-3.2.3/hadoop-3.2.3.tar.gz
+tar -xzvf hadoop-3.2.3.tar.gz
+cd hadoop-3.2.3
+cp -r ~/Hadoop-VM/hadoop-3.2.3/etc .
+# Setup SSH for Hadoop (Ubuntu) User
+chmod +x ~/* # (Optional)
+hdfs namenode -format
+start-all.sh
+jps
+ip addr show # get instance-ip
+# Go to: : http://<instance-ip>:9870 (HDFS), http://<instance-ip>:8088 (YARN)
+stop-all.sh
 ```
+
 # Build from scratch
 ## Create Multipass instance (Ubuntu machine)
 ```bash
@@ -221,7 +259,7 @@ nano ~/.ssh/config
 # DO: Go to VScode -> Connect to Host -> Connect "hadoop-vm"
 ```
 ## Fix Error:
-E.g: "<user>@<instance-ip>" is "ubuntu@10.211.57.19"
+E.g: "user@instance-ip" is "ubuntu@10.211.57.19"
 1. Error: Could not establish connection to "hadoop-vm": Permission denied (publickey).
 ```bash
 ssh-copy-id ubuntu@10.211.57.19 # ubuntu@<instance-ip>, And: The bug "ubuntu@10.211.57.19: Permission denied (publickey)" bellow occurs
@@ -232,7 +270,7 @@ chmod 600 ~/.ssh/config
 ssh ubuntu@10.211.57.19 # Check the ssh connection
 ```
 
-2. Error: ubuntu@10.211.57.19: Permission denied (publickey).
+1. Error: ubuntu@10.211.57.19: Permission denied (publickey).
 ```bash
 cat ~/.ssh/id_ed25519.pub # E.g you public key: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaTlX2MjUu0w962dPQMoq3Gq6Y3Ec5la2qh3SVu4R8k bdbao@bdbaos-MBP.local
 (ssh-keygen -t ed25519) # if you don't have one
