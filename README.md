@@ -45,11 +45,11 @@ chmod 600 ~/.ssh/authorized_keys
 hdfs namenode -format
 start-all.sh
 jps
-ip addr show # get <instance-ip>
-## GO TO: http://<instance-ip>:9870 (HDFS), http://<instance-ip>:8088 (YARN)
-stop-all.sh
+ip addr show
 ```
-This is DONE!
+We get the **[instance-ip]**.\
+Then go to: [http://[instance-ip]:9870](http://<instance-ip>:9870) (HDFS), [http://[instance-ip]:8088](http://<instance-ip>:8088) (YARN).\
+This is **DONE**! We can stop the cluster by `stop-all.sh`.
 ## (Optional) Use SSH to connect to your instance
 - Use another device, e.g: **MacOS**:
 ```bash
@@ -253,7 +253,7 @@ hdfs dfs -mkdir -p /sales/data # hadoop fs -mkdir -p /sales/data
 hdfs dfs -put Hadoop-VM/data/data.csv /sales/data
 hdfs dfs -ls /sales/data
 
-scp /path/to/remote/file username@<vm_ip>:/path/in/vm/ # e.g: scp back-rlhf-chatgpt.jpg ubuntu@10.200.50.10:~/hadoop-vm/data
+scp /path/to/remote/file username@<vm_ip>:/path/in/vm/ # e.g: scp rlhf.jpg ubuntu@10.200.50.10:~/Hadoop-VM/data
 
 hdfs dfs -get /sales/data/data.csv ~/Hadoop-VM/data
 hdfs dfs -rm -r /sales
