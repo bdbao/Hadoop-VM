@@ -3,12 +3,14 @@
 # Quick Start
 ```bash
 brew install --cask multipass
-VM_NAME="hadoop-vm"
+VM_NAME="hadoop-vm1"
 multipass launch jammy --name "$VM_NAME" --disk 6G
-
 multipass shell "$VM_NAME"
+```
+Now, switch to **Ubuntu shell**:
+```bash
 cd ~ && git clone https://github.com/bdbao/Hadoop-VM
-sudo apt update
+# sudo apt update
 sudo apt install openjdk-8-jdk-headless -y
 java -version
 sudo sh -c 'echo export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-arm64" >> /etc/environment'
@@ -29,7 +31,6 @@ export HADOOP_STREAMING=\$HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-3.
 export HADOOP_LOG_DIR=\$HADOOP_HOME/logs
 export PDSH_RCMD_TYPE=ssh
 EOF
-
 source ~/.bashrc
 wget https://archive.apache.org/dist/hadoop/common/hadoop-3.2.3/hadoop-3.2.3.tar.gz
 tar -xzvf hadoop-3.2.3.tar.gz
@@ -45,9 +46,9 @@ chmod 600 ~/.ssh/authorized_keys
 hdfs namenode -format
 start-all.sh
 jps
-ip addr show
+ip addr show | grep "inet " | grep -Fv 127.0.0.1 | awk '{print $2}'
 ```
-We get the **[instance-ip]**.\
+Here get the **[instance-ip]** (without **/mask**).\
 Then go to: [http://[instance-ip]:9870](http://<instance-ip>:9870) (HDFS), [http://[instance-ip]:8088](http://<instance-ip>:8088) (YARN).\
 This is **DONE**! We can stop the cluster by `stop-all.sh`.
 ## (Optional) Use SSH to connect to your instance
